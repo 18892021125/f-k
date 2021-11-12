@@ -125,7 +125,7 @@ generate_texture_atlases(std::vector<TexturePatch::Ptr> * orig_texture_patches,
     #pragma omp single
     {
 
-    while (!texture_patches.empty()) {
+    while (!texture_patches.empty()&& texture_atlases->size()<10) {
         unsigned int texture_size = calculate_texture_size(texture_patches);
 
         texture_atlases->push_back(TextureAtlas::create(texture_size));
@@ -133,6 +133,7 @@ generate_texture_atlases(std::vector<TexturePatch::Ptr> * orig_texture_patches,
 
         /* Try to insert each of the texture patches into the texture atlas. */
         std::list<TexturePatch::ConstPtr>::iterator it = texture_patches.begin();
+        
         for (; it != texture_patches.end();) {
             std::size_t done_patches = total_num_patches - remaining_patches;
             int precent = static_cast<float>(done_patches)

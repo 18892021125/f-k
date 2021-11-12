@@ -9,7 +9,7 @@
 
 #include <algorithm>
 #include <cstdint>
-
+#include <iostream>
 #include "lbp_graph.h"
 
 MRF_NAMESPACE_BEGIN
@@ -157,5 +157,25 @@ int LBPGraph::what_label(int site) {
 int LBPGraph::num_sites() {
     return static_cast<int>(vertices.size());
 }
-
+int LBPGraph::getadjedge() {
+    if (!edges.empty())
+    {
+        int i = edges.back().v1;
+        
+        std::cout<<"edges..()= "<<i<<std::endl;
+        return i;
+    }
+    else
+        return 0;
+}
+std::vector<int> LBPGraph::getadjedgev(int index) {
+    std::vector<int> temp;
+    int j = 0;
+    for (int i = 0; i < edges.size(); i++) {
+        j = edges[i].v1;
+        temp.push_back(j);
+    }
+    std::cout << "temp<int > return succ" << std::endl;
+    return temp;
+}
 MRF_NAMESPACE_END

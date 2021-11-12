@@ -83,5 +83,12 @@ ENERGY_TYPE ICMGraph::smooth_cost(int site, int label) {
 int ICMGraph::num_sites() {
     return static_cast<int>(sites.size());
 }
-
+int ICMGraph::getadjedge() {
+    return 0;
+}
+std::vector<int> ICMGraph::getadjedgev(int index) {
+    std::vector<int> s ;
+ 
+    return s;
+}
 MRF_NAMESPACE_END

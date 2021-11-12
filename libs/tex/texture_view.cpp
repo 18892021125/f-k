@@ -17,14 +17,15 @@
 
 TEX_NAMESPACE_BEGIN
 
-TextureView::TextureView(std::size_t id, mve::CameraInfo const & camera,
-    std::string const & image_file)
+TextureView::TextureView(std::size_t id, mve::CameraInfo const& camera,
+    std::string const& image_file)
     : id(id), image_file(image_file) {
 
     mve::image::ImageHeaders header;
     try {
-         header = mve::image::load_file_headers(image_file);
-    } catch (util::Exception e) {
+        header = mve::image::load_file_headers(image_file);
+    }
+    catch (util::Exception e) {
         std::cerr << "Could not load image header of " << image_file << std::endl;
         std::cerr << e.what() << std::endl;
         std::exit(EXIT_FAILURE);
@@ -39,18 +40,18 @@ TextureView::TextureView(std::size_t id, mve::CameraInfo const & camera,
     camera.fill_world_to_cam(*world_to_cam);
 }
 
-TextureView::TextureView(std::size_t id, mve::CameraInfo const & camera,
-	mve::ByteImage::Ptr _image)
-	: id(id) {
+TextureView::TextureView(std::size_t id, mve::CameraInfo const& camera,
+    mve::ByteImage::Ptr _image)
+    : id(id) {
 
-	image = _image;
-	width = image->width();
-	height = image->height();
+    image = _image;
+    width = image->width();
+    height = image->height();
 
-	camera.fill_calibration(*projection, width, height);
-	camera.fill_camera_pos(*pos);
-	camera.fill_viewing_direction(*viewdir);
-	camera.fill_world_to_cam(*world_to_cam);
+    camera.fill_calibration(*projection, width, height);
+    camera.fill_camera_pos(*pos);
+    camera.fill_viewing_direction(*viewdir);
+    camera.fill_world_to_cam(*world_to_cam);
 }
 
 void
@@ -62,7 +63,7 @@ TextureView::generate_validity_mask(void) {
     std::list<math::Vec2i> queue;
 
     /* Start from the corners. */
-    queue.push_back(math::Vec2i(0,0));
+    queue.push_back(math::Vec2i(0, 0));
     checked->at(0, 0, 0) = 255;
     queue.push_back(math::Vec2i(0, height - 1));
     checked->at(0, height - 1, 0) = 255;
@@ -109,7 +110,7 @@ TextureView::generate_validity_mask(void) {
 
 void
 TextureView::load_image(void) {
-    if(image != NULL) return;
+    if (image != NULL) return;
     image = mve::image::load_file(image_file);
 }
 
@@ -146,8 +147,8 @@ TextureView::erode_validity_mask(void) {
 }
 
 void
-TextureView::get_face_info(math::Vec3f const & v1, math::Vec3f const & v2,
-    math::Vec3f const & v3, FaceProjectionInfo * face_info, Settings const & settings) const {
+TextureView::get_face_info(math::Vec3f const& v1, math::Vec3f const& v2,
+    math::Vec3f const& v3, FaceProjectionInfo* face_info, Settings const& settings) const {
 
     assert(image != NULL);
     assert(settings.data_term != DATA_TERM_GMI || gradient_magnitude != NULL);
@@ -175,8 +176,8 @@ TextureView::get_face_info(math::Vec3f const & v1, math::Vec3f const & v2,
     if (sampling_necessary && area > 0.5f) {
         /* Sort pixels in ascending order of y */
         while (true)
-            if(p1[1] <= p2[1])
-                if(p2[1] <= p3[1]) break;
+            if (p1[1] <= p2[1])
+                if (p2[1] <= p3[1]) break;
                 else std::swap(p2, p3);
             else std::swap(p1, p2);
 
@@ -219,8 +220,8 @@ TextureView::get_face_info(math::Vec3f const & v1, math::Vec3f const & v2,
                 if (!fast_sampling_possible && !tri.inside(cx, cy)) continue;
 
                 if (settings.outlier_removal != OUTLIER_REMOVAL_NONE) {
-                    for (std::size_t i = 0; i < 3; i++){
-                         color[i] = static_cast<double>(image->at(x, y, i)) / 255.0;
+                    for (std::size_t i = 0; i < 3; i++) {
+                        color[i] = static_cast<double>(image->at(x, y, i)) / 255.0;
                     }
                     colors += color;
                 }
@@ -236,7 +237,8 @@ TextureView::get_face_info(math::Vec3f const & v1, math::Vec3f const & v2,
     if (settings.data_term == DATA_TERM_GMI) {
         if (num_samples > 0) {
             gmi = (gmi / num_samples) * area;
-        } else {
+        }
+        else {
             double gmv1 = static_cast<double>(gradient_magnitude->linear_at(p1[0], p1[1], 0)) / 255.0;
             double gmv2 = static_cast<double>(gradient_magnitude->linear_at(p2[0], p2[1], 0)) / 255.0;
             double gmv3 = static_cast<double>(gradient_magnitude->linear_at(p3[0], p3[1], 0)) / 255.0;
@@ -247,20 +249,21 @@ TextureView::get_face_info(math::Vec3f const & v1, math::Vec3f const & v2,
     if (settings.outlier_removal != OUTLIER_REMOVAL_NONE) {
         if (num_samples > 0) {
             face_info->mean_color = colors / num_samples;
-        } else {
+        }
+        else {
             math::Vec3d c1, c2, c3;
             for (std::size_t i = 0; i < 3; ++i) {
-                 c1[i] = static_cast<double>(image->linear_at(p1[0], p1[1], i)) / 255.0;
-                 c2[i] = static_cast<double>(image->linear_at(p2[0], p2[1], i)) / 255.0;
-                 c3[i] = static_cast<double>(image->linear_at(p3[0], p3[1], i)) / 255.0;
+                c1[i] = static_cast<double>(image->linear_at(p1[0], p1[1], i)) / 255.0;
+                c2[i] = static_cast<double>(image->linear_at(p2[0], p2[1], i)) / 255.0;
+                c3[i] = static_cast<double>(image->linear_at(p3[0], p3[1], i)) / 255.0;
             }
             face_info->mean_color = ((c1 + c2 + c3) / 3.0);
         }
     }
 
     switch (settings.data_term) {
-        case DATA_TERM_AREA: face_info->quality = area; break;
-        case DATA_TERM_GMI:  face_info->quality = gmi; break;
+    case DATA_TERM_AREA: face_info->quality = area; break;
+    case DATA_TERM_GMI:  face_info->quality = gmi; break;
     }
 }
 
@@ -286,9 +289,9 @@ TextureView::valid_pixel(math::Vec2f pixel) const {
          * e.g. we lose valid pixel in the border of images... */
 
         valid = validity_mask[floor_x + floor_y * width] &&
-                validity_mask[floor_x + floor_yp1 * width] &&
-                validity_mask[floor_xp1 + floor_y * width] &&
-                validity_mask[floor_xp1 + floor_yp1 * width];
+            validity_mask[floor_x + floor_yp1 * width] &&
+            validity_mask[floor_xp1 + floor_y * width] &&
+            validity_mask[floor_xp1 + floor_yp1 * width];
     }
 
     return valid;
@@ -296,7 +299,7 @@ TextureView::valid_pixel(math::Vec2f pixel) const {
 
 void
 TextureView::export_triangle(math::Vec3f v1, math::Vec3f v2, math::Vec3f v3,
-    std::string const & filename) const {
+    std::string const& filename) const {
     assert(image != NULL);
     math::Vec2f p1 = get_pixel_coords(v1);
     math::Vec2f p2 = get_pixel_coords(v2);
@@ -318,7 +321,7 @@ TextureView::export_triangle(math::Vec3f v1, math::Vec3f v2, math::Vec3f v3,
 }
 
 void
-TextureView::export_validity_mask(std::string const & filename) const {
+TextureView::export_validity_mask(std::string const& filename) const {
     assert(validity_mask.size() == static_cast<std::size_t>(width * height));
     mve::ByteImage::Ptr img = mve::ByteImage::create(width, height, 1);
     for (std::size_t i = 0; i < validity_mask.size(); ++i) {

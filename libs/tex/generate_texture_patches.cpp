@@ -19,8 +19,8 @@
 
 TEX_NAMESPACE_BEGIN
 
-#define MAX_HOLE_NUM_FACES 100
-#define MAX_HOLE_PATCH_SIZE 100
+#define MAX_HOLE_NUM_FACES 1000000
+#define MAX_HOLE_PATCH_SIZE 1000000
 
 template <typename T>
 T clamp_nan_low(T const & v, T const & hi, T const & lo) {
@@ -83,6 +83,7 @@ generate_candidate(int label, TextureView const & texture_view,
     Settings const & settings) {
 
     mve::ByteImage::Ptr view_image = texture_view.get_image();
+    mve::ByteImage::Ptr view_image2 = texture_view.get_image();
     int min_x = view_image->width(), min_y = view_image->height();
     int max_x = 0, max_y = 0;
 
@@ -112,7 +113,8 @@ generate_candidate(int label, TextureView const & texture_view,
 
     int width = max_x - min_x + 1;
     int height = max_y - min_y + 1;
-
+    //std::cout << "width=" << view_image->width()<< std::endl;
+    //std::cout << "length=" << view_image->height() << std::endl;
     /* Add border and adjust min accordingly. */
     width += 2 * texture_patch_border;
     height += 2 * texture_patch_border;
@@ -126,7 +128,35 @@ generate_candidate(int label, TextureView const & texture_view,
     }
 
     mve::ByteImage::Ptr byte_image;
-    byte_image = mve::image::crop(view_image, width, height, min_x, min_y, *math::Vec3uc(255, 0, 255));
+    mve::ByteImage::Ptr byte_image2;
+    int pixelcout = texcoords.size();
+    //int pixelcout = view_image->get_pixel_amount();
+    long long colorR = 0;
+    long long colorG = 0;
+    long long colorB = 0;
+    for (int i = 0; i < pixelcout; i++) {
+        int x = ceil(texcoords[i][0]);
+        int y = ceil(texcoords[i][1]);
+        int  finali = x*3 + y * view_image->width()*3;
+        //std::cout << "final=" <<finali<< std::endl;
+        if (finali < 45163005) {
+            colorR += view_image->at(finali);
+            colorG += view_image->at(finali + 1);
+            colorB += view_image->at(finali + 2);
+        }
+    }
+    int finalR = colorR / pixelcout;
+    int finalG = colorG / pixelcout;
+    int finalB = colorB / pixelcout;
+    //std::cout << "R=" << finalR << std::endl;
+    //std::cout << "G=" << finalG << std::endl;
+    //std::cout << "B=" << finalB << std::endl;
+    //const mve::ByteImage::Ptr c_view_image = view_image;
+    byte_image = mve::image::crop(view_image,width, height, min_x, min_y, *math::Vec3uc(finalR, finalG, finalB));
+    //mve::ByteImage::Ptr rescale_byte_image(mve::ByteImage::create(width, height,3));
+    //mve::image::rescale_nearest(view_image, rescale_byte_image);
+    //byte_image = mve::image::crop(view_image, width, height, min_x, min_y, *math::Vec3uc(255, 0, 255));
+    //byte_image2 = mve::image::rescale(view_image2,mve::image::RescaleInterpolation::RESCALE_NEAREST, width, height);
     mve::FloatImage::Ptr image = mve::image::byte_to_float_image(byte_image);
 
     if (!settings.tone_mapping == TONE_MAPPING_NONE) {
@@ -478,10 +508,12 @@ generate_texture_patches(UniGraph const & graph, mve::TriangleMesh::ConstPtr mes
 
         TextureView * texture_view = &texture_views->at(i);
         texture_view->load_image();
+        //std::cout << "texture_view->" << texture_view->get_imagefile()<< std::endl;
         std::list<TexturePatchCandidate> candidates;
         for (std::size_t j = 0; j < subgraphs.size(); ++j) {
             candidates.push_back(generate_candidate(label, *texture_view, subgraphs[j], mesh, settings));
         }
+        std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
         texture_view->release_image();
 
         /* Merge candidates which contain the same image content. */
@@ -569,16 +601,28 @@ generate_texture_patches(UniGraph const & graph, mve::TriangleMesh::ConstPtr mes
                 }
             }
         }
-
+        
         if (!unseen_faces.empty()) {
-            mve::FloatImage::Ptr image = mve::FloatImage::create(3, 3, 3);
+            std::cout << "*****************************************" << std::endl;
+            std::cout << "unseen_faces img patcha start:" << std::endl;
+            std::cout << "*****************************************" << std::endl;
+            /*mve::ByteImage::Ptr view_image = texture_views->at(0).get_image();
+            int image_high = texture_views->at(0).get_height();
+            int image_width = texture_views->at(0).get_width();
+            mve::FloatImage::Ptr image_temp = mve::image::byte_to_float_image(view_image);*/
+
+            mve::FloatImage::Ptr image = mve::FloatImage::create(3,3,3);
+            
+      /*      const float color = 255;
+            image->fill_color(&color);*/
+            
             std::vector<math::Vec2f> texcoords;
             for (std::size_t i = 0; i < unseen_faces.size(); ++i) {
                 math::Vec2f projections[] = {{2.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 2.0f}};
                 texcoords.insert(texcoords.end(), &projections[0], &projections[3]);
             }
             TexturePatch::Ptr texture_patch
-                = TexturePatch::create(0, unseen_faces, texcoords, image);
+                = TexturePatch::create(5, unseen_faces, texcoords, image);
             texture_patches->push_back(texture_patch);
             std::size_t texture_patch_id = texture_patches->size() - 1;
 
@@ -594,9 +638,9 @@ generate_texture_patches(UniGraph const & graph, mve::TriangleMesh::ConstPtr mes
                     vertex_projection_infos->at(vertex_id).push_back(info);
                 }
             }
-        }
+        } 
     }
-
+   
     merge_vertex_projection_infos(vertex_projection_infos);
 
     std::cout << "done. (Took " << timer.get_elapsed_sec() << "s)" << std::endl;

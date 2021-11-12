@@ -16,7 +16,6 @@
 #include <util/file_system.h>
 #include <mve/mesh_io_ply.h>
 #include <glm/glm.hpp>
-
 #include "tex/util.h"
 #include "tex/timer.h"
 #include "tex/debug.h"
@@ -54,6 +53,9 @@ int main(int argc, char **argv) {
 
     std::cout << "Load and prepare mesh: " << std::endl;
     mve::TriangleMesh::Ptr mesh;
+	std::cout << "conf.inmesh:"<< conf.in_mesh << std::endl;
+	std::cout << "conf.in_scene:" << conf.in_scene << std::endl;
+	std::cout << "conf.out_prefix:" << conf.out_prefix << std::endl;
     try {
         mesh = mve::geom::load_ply_mesh(conf.in_mesh);
     } catch (std::exception& e) {

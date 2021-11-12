@@ -16,7 +16,7 @@ MRF_NAMESPACE_BEGIN
 
 /** Implementation of the loopy belief propagation algorithm. */
 class LBPGraph : public Graph {
-    private:
+    public:
         struct DirectedEdge {
             int v1;
             int v2;
@@ -48,8 +48,10 @@ class LBPGraph : public Graph {
         ENERGY_TYPE compute_energy();
         ENERGY_TYPE optimize(int num_iterations);
         int what_label(int site);
-
+        int getadjedge();
+        std::vector<int> getadjedgev(int index);
         int num_sites();
+        std::vector<DirectedEdge> get_directededge();
 };
 
 MRF_NAMESPACE_END

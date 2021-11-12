@@ -39,7 +39,8 @@ class ICMGraph : public Graph {
         ENERGY_TYPE compute_energy();
         ENERGY_TYPE optimize(int num_iterations);
         int what_label(int site);
-
+        int getadjedge() ;
+        std::vector<int> getadjedgev(int index);
         int num_sites();
 };
 

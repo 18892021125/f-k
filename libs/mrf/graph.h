@@ -46,7 +46,8 @@ public:
     virtual ENERGY_TYPE optimize(int num_iterations) = 0;
     virtual int what_label(int site) = 0;
     virtual int num_sites() = 0;
-
+    virtual int getadjedge() = 0;
+    virtual std::vector<int> getadjedgev(int index)= 0;
     static Graph::Ptr create(int num_sites, int num_labels, SOLVER_TYPE solver_type);
 };
 

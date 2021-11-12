@@ -9,7 +9,7 @@
 
 #include "arguments.h"
 #include "util/file_system.h"
-
+#include <iostream>
 #define SKIP_GLOBAL_SEAM_LEVELING "skip_global_seam_leveling"
 #define SKIP_GEOMETRIC_VISIBILITY_TEST "skip_geometric_visibility_test"
 #define SKIP_LOCAL_SEAM_LEVELING "skip_local_seam_leveling"
@@ -80,8 +80,8 @@ Arguments parse_args(int argc, char **argv) {
         "Skip local seam leveling (Poisson editing) [false]");
     args.add_option('\0', SKIP_HOLE_FILLING, false,
         "Skip hole filling [false]");
-    args.add_option('\0', KEEP_UNSEEN_FACES, false,
-        "Keep unseen faces [false]");
+    args.add_option('\0', KEEP_UNSEEN_FACES, true,
+        "Keep unseen faces [true]");
     args.add_option('\0', WRITE_TIMINGS, false,
         "Write out timings for each algorithm step (OUT_PREFIX + _timings.csv)");
     args.add_option('\0', NO_INTERMEDIATE_RESULTS, false,
@@ -100,7 +100,7 @@ Arguments parse_args(int argc, char **argv) {
     conf.write_timings = false;
     conf.write_intermediate_results = true;
     conf.write_view_selection_model = false;
-
+    conf.settings.keep_unseen_faces = true;
     /* Handle optional arguments. */
     for (util::ArgResult const* i = args.next_option();
          i != 0; i = args.next_option()) {
@@ -149,7 +149,10 @@ Arguments parse_args(int argc, char **argv) {
             throw std::invalid_argument("Invalid short option");
         }
     }
-
+    std::cout << "conf.setting.global_seam_leveling:" << conf.settings.global_seam_leveling << std::endl;
+    std::cout << "conf.setting.local_seam_leveling:" << conf.settings.local_seam_leveling << std::endl;
+    std::cout << "conf.setting.hole_filling:" << conf.settings.hole_filling << std::endl;
+    std::cout << "conf.setting.keep_unseen_faces:" << conf.settings.keep_unseen_faces << std::endl;
     return conf;
 }
 

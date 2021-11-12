@@ -107,7 +107,7 @@ isolate_unseen_faces(UniGraph * graph, DataCosts const & data_costs) {
 void
 view_selection(DataCosts const & data_costs, UniGraph * graph, Settings const & settings) {
     UniGraph mgraph(*graph);
-    isolate_unseen_faces(&mgraph, data_costs);
+    //isolate_unseen_faces(&mgraph, data_costs);
 
     unsigned int num_components = 0;
 
@@ -129,7 +129,13 @@ view_selection(DataCosts const & data_costs, UniGraph * graph, Settings const & 
 
     /* Label 0 is undefined. */
     const std::size_t num_labels = data_costs.rows() + 1;
+    //57=56+1
+    std::cout << "num_labels:=============" << num_labels << std::endl;
     std::vector<mrf::Graph::Ptr> mrfs(components.size());
+    //1
+    std::cout << "*****************************************" << std::endl;
+    std::cout << "components.size() = :" << components.size() << std::endl;
+    std::cout << "*****************************************"<< std::endl;
     for (std::size_t i = 0; i < components.size(); ++i) {
         mrfs[i] = mrf::Graph::create(components[i].size(), num_labels, solver_type);
     }
@@ -146,7 +152,7 @@ view_selection(DataCosts const & data_costs, UniGraph * graph, Settings const & 
     #ifndef _OPENMP
     multiple_components_simultaneously = false;
     #endif
-
+    multiple_components_simultaneously = true;
     if (multiple_components_simultaneously) {
         if (num_components > 0) {
             std::cout << "\tOptimizing " << num_components
@@ -154,6 +160,9 @@ view_selection(DataCosts const & data_costs, UniGraph * graph, Settings const & 
         }
         std::cout << "\tComp\tIter\tEnergy\t\tRuntime" << std::endl;
     }
+    int prenotzero = 0;
+    int fillcout = 0;
+    bool haschanged = false;
     #ifdef RESEARCH
     #pragma omp parallel for schedule(dynamic)
     #endif
@@ -168,7 +177,7 @@ view_selection(DataCosts const & data_costs, UniGraph * graph, Settings const & 
             break;
         }
 
-        bool verbose = mrfs[i]->num_sites() > 10000;
+        bool verbose = mrfs[i]->num_sites() > 1000;
 
         util::WallTimer timer;
 
@@ -207,12 +216,43 @@ view_selection(DataCosts const & data_costs, UniGraph * graph, Settings const & 
                     << "Increase of energy - stopping optimization" << std::endl;
             }
         }
-
+        int prezerotemp = 0;
         /* Extract resulting labeling from MRF. */
         for (std::size_t j = 0; j < components[i].size(); ++j) {
             int label = mrfs[i]->what_label(static_cast<int>(j));
+            
             assert(0 <= label && static_cast<std::size_t>(label) < num_labels);
-            graph->set_label(components[i][j], static_cast<std::size_t>(label));
+            if (label != 0)
+            {
+                graph->set_label(components[i][j], static_cast<std::size_t>(label));
+                //prenotzero = label;
+            }
+     
+            
+            else
+            {   
+                if (prezerotemp == 0) {
+                    std::vector<int> temp = mrfs[i]->getadjedgev(j);
+                    for(int q =0;q<temp.size();q++){
+                        int tempv = mrfs[i]->what_label(static_cast<int>(temp.at(q)));
+                        if (tempv != 0)
+                        {
+                            prezerotemp = tempv;
+                            std::cout << "prenotzero³É¹¦" << std::endl;
+                            break;
+                        }
+
+                    }
+                    graph->set_label(components[i][j], static_cast<std::size_t>(prezerotemp));
+                }
+                else
+                {
+                    graph->set_label(components[i][j], static_cast<std::size_t>(prezerotemp));
+                }
+                
+                
+            }
+               
         }
     }
 }
